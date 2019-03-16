@@ -1,0 +1,60 @@
+apply plugin: 'com.android.application'
+
+android {
+    signingConfigs {
+        config {
+            keyAlias 'debug_key'
+            keyPassword '232323'
+            storeFile new File('C:\\Users\\nkudzma\\Desktop\\ASWorkspace\\debug_keystore')
+            storePassword '232323'
+        }
+    }
+
+    compileSdkVersion 25
+    buildToolsVersion "26.0.1"
+    defaultConfig {
+        applicationId "com.nk.m3"
+        minSdkVersion 14
+        targetSdkVersion 25
+        versionCode
+        versionName "1.1"
+    }
+    buildTypes {
+        debug {
+            debuggable true
+            minifyEnabled false
+        }
+        release {
+            debuggable false
+            minifyEnabled false
+        }
+    }
+
+    sourceSets {
+        src {
+            main {
+                java {
+                    srcDirs += "..\\..\\src"
+                    srcDirs += "..\\..\\..\\OverloadEngine\\src"
+                    exclude "**/pc/**"
+                    exclude "**/arm/**"
+                    exclude '**/audio/**'
+                    exclude '**/controls/**'
+                    exclude '**/testing/**'
+                }
+                assets {
+                    srcDirs = [
+                        "..\\..\\resources",
+                        "..\\..\\..\\OverloadEngine\\resources"
+                    ]
+                }
+            }
+        }
+    }
+}
+
+dependencies {
+    compile files('../../../OverloadEngine/libs/jbox2d-library-2.2.1.1.jar')
+    compile files('../../../OverloadEngine/libs/json-20140107.jar')
+    compile 'com.android.support:appcompat-v7:25.3.1'
+}
