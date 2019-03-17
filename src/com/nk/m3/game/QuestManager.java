@@ -7,18 +7,18 @@ import com.ovl.utils.OverloadRandom;
 import com.ovl.utils.Vector2;
 
 public class QuestManager implements Grid.MatchListener {
-	private static final int firstQuestAt = 4; //4
-	private static final int questDelayIncrement = 12; //12
+	private static final int firstQuestAt = 4;
+	private static final int questDelayIncrement = 12;
 
 	static interface CompletionListener {
 		public void onQuestCompleted(Quest quest);
 	}
 
 	enum QuestType {
-		MakeCombos("Get combos\n[%d] left\n(Reward +%d)"), MatchColors(
-						"Destroy %s gems\n[%d] left\n(Reward +%d)"), MatchSizes(
-						"Combine %d gems\n[%d] times\n(Reward +%d)"), MatchSizesInARow(
-						"Combine %d gems\nin a row\n[%d] times\n(Reward +%d)");
+		MakeCombos("Get combos\n[%d] left\n(Reward +%d)"), 
+		MatchColors("Destroy %s gems\n[%d] left\n(Reward +%d)"), 
+		MatchSizes("Combine %d gems\n[%d] times\n(Reward +%d)"), 
+		MatchSizesInARow("Combine %d gems\nin a row\n[%d] times\n(Reward +%d)");
 
 		private QuestType(String textFormat) {
 			format = textFormat;

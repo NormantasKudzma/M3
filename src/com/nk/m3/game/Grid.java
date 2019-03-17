@@ -309,6 +309,28 @@ public class Grid implements MoveBatch.MoveFinishedListener<GemMove>, Timer.Fini
 		gem.setGemColor(subset.get(OverloadRandom.next(subset.size())));
 	}
 
+	private ArrayList<GemColor> getNeighbourColors(int row, int col){
+		ArrayList<GemColor> colors = new ArrayList<GemColor>();
+		
+		if (row > 0) {
+			colors.add(gems[row - 1][col].getGemColor());
+		}
+		
+		if (row < rows - 1) {
+			colors.add(gems[row + 1][col].getGemColor());
+		}
+		
+		if (col > 0) {
+			colors.add(gems[row][col - 1].getGemColor());
+		}
+
+		if (col < cols - 1) {
+			colors.add(gems[row][col + 1].getGemColor());
+		}
+		
+		return colors;
+	}
+	
 	public void initializeGrid(){
 		for (int row = 0; row < rows; ++row){
 			for (int col = 0; col < cols; ++col){
@@ -320,37 +342,57 @@ public class Grid implements MoveBatch.MoveFinishedListener<GemMove>, Timer.Fini
 		
 		Gem gem = null;
 		
+		int sameCounter = 0;
+		GemColor lastColor = gems[0][0].getGemColor();
+		
+		// Horizontal pass
 		for (int row = 0; row < rows; ++row){
+			sameCounter = 0;
+			lastColor = gems[row][0].getGemColor();
+			
 			for (int col = 0; col < cols; ++col){
 				gem = gems[row][col];
-				
-				// Vertical
-				if (row < rows - 2){
-					if (gem.getGemColor() == gems[row + 1][col].getGemColor() &&
-						gem.getGemColor() == gems[row + 2][col].getGemColor())
-					{
-						ArrayList<GemColor> colors = new ArrayList<>(Arrays.asList(GemColor.values()));
-						colors.remove(gem.getGemColor());
-						colors.remove(gems[Math.max(row - 1, 0)][col].getGemColor());
-						colors.remove(gems[row][Math.max(col - 1, 0)]);
-						colors.remove(gems[row][Math.min(col + 1, cols - 1)]);
-						randomizeColor(gem, colors);
-						break;
+				if (gem.getGemColor() == lastColor) {
+					++sameCounter;
+					if (sameCounter >= 2) {
+						ArrayList<GemColor> subset = new ArrayList<>(Arrays.asList(GemColor.values()));
+						subset.removeAll(getNeighbourColors(row, col));
+						
+						randomizeColor(gem, subset);
+						sameCounter = 0;
+						lastColor = gem.getGemColor();
 					}
 				}
-				
-				// Horizontal
-				if (col < cols - 2){
-					if (gem.getGemColor() == gems[row][col + 1].getGemColor() &&
-						gem.getGemColor() == gems[row][col + 2].getGemColor())
-					{
-						ArrayList<GemColor> colors = new ArrayList<>(Arrays.asList(GemColor.values()));
-						colors.remove(gem.getGemColor());
-						colors.remove(gems[Math.max(row - 1, 0)][col].getGemColor());
-						colors.remove(gems[Math.min(row + 1, rows - 1)][col]);
-						colors.remove(gems[row][Math.max(col - 1, 0)]);
-						randomizeColor(gem, colors);
+				else
+				{
+					lastColor = gem.getGemColor();
+					sameCounter = 0;
+				}
+			}
+		}
+
+		// Vertical pass
+		for (int col = 0; col < cols; ++col){
+			sameCounter = 0;
+			lastColor = gems[0][col].getGemColor();
+			
+			for (int row = 0; row < rows; ++row){
+				gem = gems[row][col];
+				if (gem.getGemColor() == lastColor) {
+					++sameCounter;
+					if (sameCounter >= 2) {
+						ArrayList<GemColor> subset = new ArrayList<>(Arrays.asList(GemColor.values()));
+						subset.removeAll(getNeighbourColors(row, col));
+						
+						randomizeColor(gem, subset);
+						sameCounter = 0;
+						lastColor = gem.getGemColor();
 					}
+				}
+				else
+				{
+					lastColor = gem.getGemColor();
+					sameCounter = 0;
 				}
 			}
 		}

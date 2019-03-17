@@ -11,35 +11,41 @@ import com.ovl.engine.Vbo;
 import com.ovl.game.GameObject;
 import com.ovl.graphics.Color;
 import com.ovl.graphics.Sprite;
+import com.ovl.utils.MutableFloat;
 import com.ovl.utils.Vector2;
 
 public class Gem extends GameObject {
 	protected static final Renderer renderer;
-	public static final String outlineShaderName;
-	public static final Shader outlineShader;
-	protected static final Vbo outlineVbo;
-	
-	private static final float selectedColorIntensity = 0.8f;
+	protected static final String highlightShaderName;
+	protected static final Shader highlightShader;
+	protected static final Vbo highlightVbo;
+	protected static final String u_K = "u_K";
+	protected static final String u_B = "u_B";
+	protected static final String u_Dist = "u_Dist";
+	protected static final String u_Offset = "u_Offset";
 	
 	private static final float normalScale = 1.16f;
 	private static final float selectedScale = 1.5f;
 	
-	private static final float normalOutline = 0.002f;
-	private static final float selectedOutline = 0.008f;
+	private static final float normal_b = 0.25f;
+	private static final float selected_b = 0.33f;
+	private static final float selected_b_change = 0.0075f;
 	
 	private GemColor gemColor;
-	private float selectedTime;
 	private boolean isSelected;
 	private float shrinkingScale;
 	private float shrinkingSpeed;
 	private boolean isShrinking;
-	private Vector2 outlineSize = new Vector2();
+	
+	private MutableFloat highlight_k = new MutableFloat(1.6f);
+	private MutableFloat highlight_b = new MutableFloat(0.0f);
+	private MutableFloat highlight_dist = new MutableFloat(0.028f);
 	
 	static {
 		renderer = OverloadEngine.getInstance().renderer;
-		outlineShaderName = "Outline";
-		outlineShader = renderer.createShader("Outline");
-		outlineVbo = renderer.createVbo("Outline", 4);
+		highlightShaderName = "Highlight";
+		highlightShader = renderer.createShader(highlightShaderName);
+		highlightVbo = renderer.createVbo(highlightShaderName, 4);
 	}
 	
 	public void setGemColor(GemColor gemColor){
@@ -50,12 +56,15 @@ public class Gem extends GameObject {
 		if (sprite == null){
 			sprite = new Sprite(newSprite.getTexture());
 			
-			HashMap<String, ParamSetter> outlineParams = new HashMap<String, ParamSetter>();
-			outlineParams.put(Shader.U_COLOR, ParamSetterFactory.build(outlineShader, Shader.U_COLOR, sprite.getColor()));
-			outlineParams.put(Shader.U_TEXTURE, ParamSetterFactory.build(outlineShader, Shader.U_TEXTURE, newSprite.getTexture()));
-			outlineParams.put(Shader.U_MVPMATRIX, ParamSetterFactory.buildDefault(outlineShader, Shader.U_MVPMATRIX));
-			outlineParams.put("u_Size", ParamSetterFactory.build(outlineShader, "u_Size", outlineSize));
-			sprite.useShader(outlineVbo, outlineParams);
+			HashMap<String, ParamSetter> shaderParams = new HashMap<String, ParamSetter>();
+			shaderParams.put(Shader.U_COLOR, ParamSetterFactory.build(highlightShader, Shader.U_COLOR, sprite.getColor()));
+			shaderParams.put(Shader.U_TEXTURE, ParamSetterFactory.build(highlightShader, Shader.U_TEXTURE, newSprite.getTexture()));
+			shaderParams.put(Shader.U_MVPMATRIX, ParamSetterFactory.buildDefault(highlightShader, Shader.U_MVPMATRIX));
+			shaderParams.put(u_K, ParamSetterFactory.build(highlightShader, u_K, highlight_k));
+			shaderParams.put(u_B, ParamSetterFactory.build(highlightShader, u_B, highlight_b));
+			shaderParams.put(u_Dist, ParamSetterFactory.build(highlightShader, u_Dist, highlight_dist));
+			shaderParams.put(u_Offset, ParamSetterFactory.build(highlightShader, u_Offset, getPosition()));
+			sprite.useShader(highlightVbo, shaderParams);
 		}
 
 		Vector2 uv[] = newSprite.getUV();
@@ -69,17 +78,18 @@ public class Gem extends GameObject {
 	}
 	
 	public void select(){
-		selectedTime = 0.0f;
 		isSelected = true;
 		setScale(selectedScale, selectedScale);
-		outlineSize.set(selectedOutline, selectedOutline);
+
+		highlight_b.value = selected_b;
 	}
 	
 	public void unselect(){
 		isSelected = false;
 		setColor(Color.WHITE);
 		setScale(normalScale, normalScale);
-		outlineSize.set(normalOutline, normalOutline);
+
+		highlight_b.value = normal_b;
 	}
 	
 	public void shrink(float duration){
@@ -97,15 +107,12 @@ public class Gem extends GameObject {
 	public void update(float deltaTime) {
 		super.update(deltaTime);
 		
-		/*if (isSelected){
-			selectedTime += deltaTime * 5.0f;
-			
-			Color color = getColor();
-			float value = selectedColorIntensity + (float)Math.cos(selectedTime) * (1.0f - selectedColorIntensity);
-			for (int i = 0; i < color.rgba.length - 1; ++i){
-				color.rgba[i] = value;
+		if (isSelected){
+			highlight_b.value -= selected_b_change;
+			if (highlight_b.value <= -selected_b) {
+				highlight_b.value = selected_b;
 			}
-		}*/
+		}
 		
 		if (isShrinking){
 			shrinkingScale -= deltaTime * shrinkingSpeed;

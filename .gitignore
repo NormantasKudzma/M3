@@ -2,3 +2,4 @@ bin/
 scores.txt
 .idea/
 build/
+hs_err_pid*

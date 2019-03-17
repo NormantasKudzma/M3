@@ -1,7 +1,6 @@
 package com.nk.m3.main;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 import com.nk.m3.game.Gem;
 import com.nk.m3.game.GemColor;
@@ -12,11 +11,7 @@ import com.nk.m3.game.ScoreTracker;
 import com.nk.m3.game.Timer;
 import com.nk.m3.game.TimerAnimation;
 import com.ovl.engine.OverloadEngine;
-import com.ovl.engine.ParamSetter;
-import com.ovl.engine.ParamSetterFactory;
 import com.ovl.engine.Renderer;
-import com.ovl.engine.Shader;
-import com.ovl.engine.Vbo;
 import com.ovl.game.GameObject;
 import com.ovl.graphics.Color;
 import com.ovl.graphics.CustomFont;
@@ -26,7 +21,6 @@ import com.ovl.graphics.SimpleFont;
 import com.ovl.graphics.SortedLayer;
 import com.ovl.graphics.Sprite;
 import com.ovl.graphics.UnsortedLayer;
-import com.ovl.utils.Pair;
 import com.ovl.utils.Paths;
 import com.ovl.utils.Vector2;
 
