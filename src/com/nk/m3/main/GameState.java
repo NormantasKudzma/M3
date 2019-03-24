@@ -10,6 +10,7 @@ import com.nk.m3.game.Rect;
 import com.nk.m3.game.ScoreTracker;
 import com.nk.m3.game.Timer;
 import com.nk.m3.game.TimerAnimation;
+import com.nk.m3.game.Variant;
 import com.ovl.engine.OverloadEngine;
 import com.ovl.engine.Renderer;
 import com.ovl.game.GameObject;
@@ -21,14 +22,11 @@ import com.ovl.graphics.SimpleFont;
 import com.ovl.graphics.SortedLayer;
 import com.ovl.graphics.Sprite;
 import com.ovl.graphics.UnsortedLayer;
+import com.ovl.utils.FastMath;
 import com.ovl.utils.Paths;
 import com.ovl.utils.Vector2;
 
 public class GameState implements State, Timer.FinishListener {	
-	private final int numRows = 9;
-	private final int numCols = 9;
-	private final float gameDuration = 300.0f;
-	
 	private Game game;
 	private ArrayList<Gem> gems;
 	private Grid grid;
@@ -37,12 +35,22 @@ public class GameState implements State, Timer.FinishListener {
 	private Timer gameTimer;
 	private TimerAnimation timerAnimation;
 	private QuestManager questManager;
+	private boolean gameFinished = false;
+	private int numRows = 9;
+	private int numCols = 9;
+	private float gameDuration = 300.0f;
+	private Variant variant;
 
 	public Layer textLayer;
 	public Layer gemLayer;
 	
-	public GameState(Game game){
+	public GameState(Game game, Variant variant){
 		this.game = game;
+		
+		this.variant = variant;
+		numRows = variant.rows;
+		numCols = variant.cols;
+		gameDuration = variant.duration;
 	}
 	
 	@Override
@@ -60,9 +68,11 @@ public class GameState implements State, Timer.FinishListener {
 		GemColor.WHITE.setSprite(Sprite.getSpriteFromSheet(0, 64, 64, 64, sheet));
 		GemColor.PURPLE.setSprite(Sprite.getSpriteFromSheet(64, 64, 64, 64, sheet));
 		GemColor.YELLOW.setSprite(Sprite.getSpriteFromSheet(128, 64, 64, 64, sheet));
-
-		Vector2 gemSize = Vector2.pixelCoordsToNormal(new Vector2(64.0f, 64.0f));
-		Vector2 padding = Vector2.pixelCoordsToNormal(new Vector2(2.0f, 2.0f));
+		
+		float gridScaling = FastMath.clamp(9.0f / numRows, 0.9f, 1.2f);
+		
+		Vector2 gemSize = Vector2.toNormal(new Vector2(gridScaling * 64.0f));
+		Vector2 padding = Vector2.toNormal(new Vector2(2.0f));
 		float startX = -(numCols * (gemSize.x + padding.x) * 0.5f) + gemSize.x * 0.5f;
 		float startY = -(numRows * (gemSize.y + padding.y) * 0.5f);
 		float x = startX;
@@ -83,7 +93,7 @@ public class GameState implements State, Timer.FinishListener {
 		
 		for (int row = 0; row < numRows; ++row){
 			for (int col = 0; col < numCols; ++col){
-				Gem g = new Gem();
+				Gem g = new Gem(gridScaling);
 				grid.gems[row][col] = g;
 				gems.add(g);
 				g.setPosition(x, y);
@@ -125,9 +135,8 @@ public class GameState implements State, Timer.FinishListener {
 		
 		gameTimer = new Timer(gameDuration);
 		gameTimer.start();
-		gameTimer.addFinishListener(grid);
-		gameTimer.addFinishListener(scoreTracker);
 		gameTimer.addFinishListener(this);
+		gameFinished = false;
 
 		float border = 0.01f * aspectRatio;
 						
@@ -189,11 +198,16 @@ public class GameState implements State, Timer.FinishListener {
 
 	@Override
 	public void finish() {
+		scoreTracker.onGameFinished(variant);
+		
 		game.removeLayer(gemLayer);
 		gemLayer.destroy();
-		
+
 		game.removeLayer(textLayer);
 		textLayer.destroy();
+
+		game.state = new EndState(game, variant, true);
+		game.state.start();
 	}
 
 	@Override
@@ -203,6 +217,10 @@ public class GameState implements State, Timer.FinishListener {
 		scoreTracker.update(deltaTime);
 		gameTimer.update(deltaTime);
 		questManager.update(deltaTime);
+		
+		if (gameFinished && grid.getState() == Grid.State.IDLE) {
+			finish();
+		}
 	}
 
 	@Override
@@ -238,9 +256,6 @@ public class GameState implements State, Timer.FinishListener {
 	}
 
 	public void onTimerFinished(){
-		finish();
-		
-		game.state = new EndState(game);
-		game.state.start();
+		gameFinished = true;
 	}
 }

@@ -10,15 +10,18 @@ android {
         }
     }
 
-    compileSdkVersion 25
-    buildToolsVersion "26.0.1"
+    compileSdkVersion 28
+    buildToolsVersion "28.0.3"
+
     defaultConfig {
         applicationId "com.nk.m3"
         minSdkVersion 14
-        targetSdkVersion 25
-        versionCode
+        targetSdkVersion 28
+        versionCode 9
         versionName "1.1"
+        signingConfig signingConfigs.config
     }
+
     buildTypes {
         debug {
             debuggable true
@@ -31,30 +34,32 @@ android {
     }
 
     sourceSets {
-        src {
-            main {
-                java {
-                    srcDirs += "..\\..\\src"
-                    srcDirs += "..\\..\\..\\OverloadEngine\\src"
-                    exclude "**/pc/**"
-                    exclude "**/arm/**"
-                    exclude '**/audio/**'
-                    exclude '**/controls/**'
-                    exclude '**/testing/**'
-                }
-                assets {
-                    srcDirs = [
+        main {
+            java {
+                srcDirs += "..\\..\\src"
+                srcDirs += "..\\..\\..\\OverloadEngine\\src"
+                exclude "**/pc/**"
+                exclude "**/arm/**"
+                exclude '**/audio/**'
+                exclude '**/controls/**'
+                exclude '**/testing/**'
+            }
+            assets {
+                srcDirs = [
                         "..\\..\\resources",
                         "..\\..\\..\\OverloadEngine\\resources"
-                    ]
-                }
+                ]
             }
         }
+    }
+
+    productFlavors {
     }
 }
 
 dependencies {
-    compile files('../../../OverloadEngine/libs/jbox2d-library-2.2.1.1.jar')
-    compile files('../../../OverloadEngine/libs/json-20140107.jar')
-    compile 'com.android.support:appcompat-v7:25.3.1'
+    implementation files('../../../OverloadEngine/libs/android/jbox2d-library-2.2.1.1.jar')
+    implementation files('../../../OverloadEngine/libs/android/json-20140107.jar')
+
+    implementation 'com.android.support:appcompat-v7:28.0.0'
 }

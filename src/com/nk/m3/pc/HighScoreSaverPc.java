@@ -8,19 +8,26 @@ import java.io.FileWriter;
 
 import com.nk.m3.game.HighScoreManager.HighScore;
 import com.nk.m3.game.HighScoreManager.HighScoreSaver;
+import com.nk.m3.game.HighScoreManager.VariantScores;
+import com.nk.m3.game.Variant;
 
 public class HighScoreSaverPc implements HighScoreSaver {
-	private static final String separator = ";";
+	private static final String separator = "=";
 	private File saveFile;
 
 	@Override
-	public void save(HighScore[] scores) {
+	public void save(VariantScores variantScores[]) {
 		BufferedWriter writer = null;
 		try {
 			writer = new BufferedWriter(new FileWriter(saveFile, false));
-			for (int i = 0; i < scores.length; ++i){
-				writer.write(String.format("%d%s%s\n", scores[i].score, separator, scores[i].name));
+			
+			for (VariantScores v : variantScores) {
+				for (int i = 0; i < v.scores.length; ++i) {
+					String data = String.format("%s%s%d%s%s\n", v.variant.name, separator, v.scores[i].score, separator, v.scores[i].name);
+					writer.write(data);
+				}
 			}
+			
 			writer.close();
 		}
 		catch (Exception e){
@@ -31,22 +38,39 @@ public class HighScoreSaverPc implements HighScoreSaver {
 		}
 	}
 
+	private VariantScores getVariantScores(VariantScores variantScores[], String variant) {
+		for (int i = 0; i < variantScores.length; ++i) {
+			if (variantScores[i].variant.name.equals(variant)) { return variantScores[i]; }
+		}
+		
+		return null;
+	}
+	
 	@Override
-	public void load(HighScore[] scores) {
+	public void load(VariantScores variantScores[]) {
 		BufferedReader reader = null;
 		try {
 			reader = new BufferedReader(new FileReader(saveFile));
 			String line;
-			int lineNum = 0;
-			while ((line = reader.readLine()) != null && lineNum < scores.length){
+			int lineNum[] = new int[variantScores.length];
+			
+			while ((line = reader.readLine()) != null){
 				String parts[] = line.split(separator);
-				if (parts.length > 0){
-					scores[lineNum].score = Integer.parseInt(parts[0]);
+				if (parts.length < 2) {
+					continue;
 				}
-				if (parts.length > 1){
-					scores[lineNum].name = parts[1];
+				
+				VariantScores v = getVariantScores(variantScores, parts[0]);
+				if (v == null || lineNum[v.variant.ordinal()] >= v.scores.length){
+					continue;
 				}
-				++lineNum;
+				
+				v.scores[lineNum[v.variant.ordinal()]].score = Integer.parseInt(parts[1]);
+				if (parts.length > 2) {
+					v.scores[lineNum[v.variant.ordinal()]].name = parts[2];
+				}
+				
+				++lineNum[v.variant.ordinal()];
 			}
 			reader.close();
 		}

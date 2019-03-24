@@ -3,7 +3,7 @@ package com.nk.m3.game;
 import com.ovl.graphics.SimpleFont;
 import com.ovl.utils.Vector2;
 
-public class ScoreTracker implements Grid.MatchListener, Timer.FinishListener, QuestManager.CompletionListener {
+public class ScoreTracker implements Grid.MatchListener, QuestManager.CompletionListener {
 	class AnimatedFont {
 		final float maxDuration = 1.2f;
 		
@@ -113,9 +113,8 @@ public class ScoreTracker implements Grid.MatchListener, Timer.FinishListener, Q
 		}
 	}
 
-	@Override
-	public void onTimerFinished() {
-		HighScoreManager.submit(score);
+	public void onGameFinished(Variant variant) {
+		HighScoreManager.submit(variant, score);
 
 		for (AnimatedFont a : animatedScoreText){
 			a.stop();

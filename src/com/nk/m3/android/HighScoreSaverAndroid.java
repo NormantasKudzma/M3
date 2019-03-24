@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import com.nk.m3.game.HighScoreManager;
+import com.nk.m3.game.HighScoreManager.VariantScores;
 import com.nk.m3.game.HighScoreManager.HighScoreSaver;
 import com.nk.m3.game.HighScoreManager.HighScore;
 
@@ -15,23 +17,31 @@ public class HighScoreSaverAndroid implements HighScoreSaver {
 	}
 	
 	@Override
-	public void save(HighScore[] scores) {
+	public void save(VariantScores variantScores[]) {
 		SharedPreferences.Editor editor = preferences.edit();
-		for (int i = 1; i <= scores.length; ++i){
-			editor.putInt("score" + i, scores[i - 1].score);
+
+		for (VariantScores v : variantScores){
+			for (int i = 1; i <= v.scores.length; ++i){
+				editor.putInt(v.variant.name + "_score" + i, v.scores[i - 1].score);
+			}
 		}
+
 		editor.apply();
 	}
 
 	@Override
-	public void load(HighScore[] scores) {
-		int defaultValue = -1;
-		for (int i = 1; i <= scores.length; ++i){
-			int value = preferences.getInt("score" + i, defaultValue);
-			if (value == defaultValue){
-				break;
+	public void load(VariantScores variantScores[]) {
+		final int defaultValue = -1;
+
+		for (VariantScores v : variantScores){
+			for (int i = 1; i <= v.scores.length; ++i){
+				int value = preferences.getInt(v.variant.name +"_score" + i, defaultValue);
+				if (value == defaultValue){
+					break;
+				}
+
+				v.scores[i - 1].score = value;
 			}
-			scores[i - 1].score = value;
 		}
 	}
 

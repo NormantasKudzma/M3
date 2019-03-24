@@ -7,13 +7,13 @@ import java.util.List;
 import com.ovl.utils.OverloadRandom;
 import com.ovl.utils.Vector2;
 
-public class Grid implements MoveBatch.MoveFinishedListener<GemMove>, Timer.FinishListener {
+public class Grid implements MoveBatch.MoveFinishedListener<GemMove> {
 	static interface MatchListener {
 		public void onMatchChain(Match match);
 		public void onMatchChainEnded();
 	}
 	
-	enum State {
+	public enum State {
 		SWAPBACK, SWAPPING, FALLING, DESTROYING, IDLE
 	}
 
@@ -416,7 +416,7 @@ public class Grid implements MoveBatch.MoveFinishedListener<GemMove>, Timer.Fini
 		}
 	}
 	
-	public void onTimerFinished(){
-		state = State.IDLE;
+	public State getState() {
+		return state;
 	}
 }

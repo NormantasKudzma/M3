@@ -19,7 +19,7 @@ import com.ovl.utils.Vector2;
 public class Match3Main {
 	public static void main(String[] args){
 		final Game game = new Game();
-		game.platformInit = new Game.PlatformInit() {
+		game.platform = new Game.Platform() {
 			float mouseFix;
 			
 			@Override
@@ -50,6 +50,14 @@ public class Match3Main {
 					}
 				}));
 				keyboard.startController();
+			}
+		
+			public String getVersion() {
+				return "1.1";
+			}
+			
+			public int getBuild() {
+				return 8;
 			}
 		};
 		

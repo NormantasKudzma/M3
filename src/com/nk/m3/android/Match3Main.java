@@ -10,6 +10,7 @@ import android.view.Display;
 import android.view.MotionEvent;
 import android.view.View;
 
+import com.nk.m3.BuildConfig;
 import com.nk.m3.game.HighScoreManager;
 import com.nk.m3.main.Game;
 import com.ovl.engine.EngineConfig;
@@ -26,6 +27,17 @@ public class Match3Main extends Activity {
 		super.onCreate(savedInstanceState);
 		
 		HighScoreManager.saver = new HighScoreSaverAndroid(this);
+		game.platform = new Game.Platform(){
+			public void init(){}
+
+			public String getVersion(){
+				return BuildConfig.VERSION_NAME;
+			}
+
+			public int getBuild(){
+				return BuildConfig.VERSION_CODE;
+			}
+		};
 	}
 	
 	@Override
@@ -83,7 +95,19 @@ public class Match3Main extends Activity {
 			setContentView(engine.getSurfaceView(this));
 		}
 	}
-	
+
+	@Override
+	protected void onPause() {
+		super.onPause();
+		engine.onPause();
+	}
+
+	@Override
+	protected void onResume() {
+		super.onResume();
+		engine.onResume();
+	}
+
 	@Override
 	public void onWindowFocusChanged(boolean hasFocus) {
 		super.onWindowFocusChanged(hasFocus);

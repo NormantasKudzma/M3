@@ -24,10 +24,10 @@ public class Gem extends GameObject {
 	protected static final String u_Dist = "u_Dist";
 	protected static final String u_Offset = "u_Offset";
 	
-	private static final float normalScale = 1.16f;
-	private static final float selectedScale = 1.5f;
+	private float normalScale = 1.16f;
+	private float selectedScale = 1.5f;
 	
-	private static final float normal_b = 0.25f;
+	private final float normal_b = 0.25f;
 	private static final float selected_b = 0.33f;
 	private static final float selected_b_change = 0.0075f;
 	
@@ -46,6 +46,11 @@ public class Gem extends GameObject {
 		highlightShaderName = "Highlight";
 		highlightShader = renderer.createShader(highlightShaderName);
 		highlightVbo = renderer.createVbo(highlightShaderName, 4);
+	}
+	
+	public Gem(float gridScale) {
+		normalScale *= gridScale;
+		selectedScale *= gridScale;
 	}
 	
 	public void setGemColor(GemColor gemColor){

@@ -2,8 +2,8 @@ package com.nk.m3.game;
 
 public class HighScoreManager {
 	public interface HighScoreSaver {
-		public void save(HighScore scores[]);
-		public void load(HighScore scores[]);
+		public void save(VariantScores variantScores[]);
+		public void load(VariantScores variantScores[]);
 		public void init();
 	}
 	
@@ -11,65 +11,84 @@ public class HighScoreManager {
 		public int score;
 		public String name;
 	}
-	
+
 	private static final int maxScores = 10;
-	private static int last;
-	private static int lastPos;
-	private static HighScore scores[];
+	
+	public static class VariantScores {
+		public HighScore scores[];
+		public int last;
+		public int lastPos;
+		public Variant variant;
+	}
+	
+	private static VariantScores variantScores[];
 	private static boolean isInitialized;
 	public static HighScoreSaver saver;
 	
-	public static void submit(int score){
+	public static void submit(Variant variant, int score){
 		if (!isInitialized){
 			isInitialized = true;
 			init();
 		}
-		
-		last = score;
-		lastPos = -1;
 
-		for (int i = maxScores - 1; i >= 0 && last > scores[i].score; --i){
-			lastPos = i;
+		VariantScores v = getVariantScores(variant);
+		v.last = score;
+		v.lastPos = -1;
+
+		for (int i = maxScores - 1; i >= 0 && v.last > v.scores[i].score; --i){
+			v.lastPos = i;
 		}
 		
-		if (lastPos != -1){
-			for (int i = maxScores - 1; i > lastPos && i > 0; --i){
-				scores[i].score = scores[i - 1].score;
-				scores[i].name = scores[i - 1].name;
+		if (v.lastPos != -1){
+			for (int i = maxScores - 1; i > v.lastPos && i > 0; --i){
+				v.scores[i].score = v.scores[i - 1].score;
+				v.scores[i].name = v.scores[i - 1].name;
 			}
-			scores[lastPos].score = last;
-			scores[lastPos].name = "";
+			v.scores[v.lastPos].score = v.last;
+			v.scores[v.lastPos].name = "";
 			save();
 		}
 	}
 	
-	public static int last(){
-		return last;
+	public static int last(Variant variant){
+		return getVariantScores(variant).last;
 	}
 	
-	public static int lastPos(){
-		return lastPos + 1;
+	public static int lastPos(Variant variant){
+		return getVariantScores(variant).lastPos + 1;
 	}
 	
-	public static int get(int position){
+	public static int getScore(Variant variant, int position){
 		if (!isInitialized){
 			isInitialized = true;
 			init();
 		}
 		
-		if (position <= 0 || position > scores.length){
+		VariantScores variantScores = getVariantScores(variant);
+		
+		if (position <= 0 || position > variantScores.scores.length){
 			return 0;
 		}
 		
-		return scores[position - 1].score;
+		return variantScores.scores[position - 1].score;
 	}
 	
 	private static void init(){
-		lastPos = -1;
-		scores = new HighScore[maxScores];
-		for (int i = 0; i < maxScores; ++i){
-			scores[i] = new HighScore();
-			scores[i].name = "";
+		variantScores = new VariantScores[Variant.values().length];
+		
+		for (int i = 0; i < variantScores.length; ++i) {
+			variantScores[i] = new VariantScores();
+			
+			VariantScores v = variantScores[i];
+			v.last = 0;
+			v.lastPos = -1;
+			v.scores = new HighScore[maxScores];
+			v.variant = Variant.values()[i];
+			
+			for (int j = 0; j < maxScores; ++j){
+				v.scores[j] = new HighScore();
+				v.scores[j].name = "";
+			}
 		}
 		
 		saver.init();
@@ -77,19 +96,29 @@ public class HighScoreManager {
 	}
 	
 	private static void save(){
-		saver.save(scores);
+		saver.save(variantScores);
 	}
 	
 	private static void load(){
-		saver.load(scores);
+		saver.load(variantScores);
 	}
 	
-	public static void setName(int pos, String name){
-		scores[pos - 1].name = name;
+	private static VariantScores getVariantScores(Variant variant) {
+		for (int i = 0; i < variantScores.length; ++i) {
+			if (variantScores[i].variant == variant) { return variantScores[i]; }
+		}
+		
+		return null;
+	}
+	
+	public static void setName(Variant variant, int pos, String name){
+		VariantScores variantScores = getVariantScores(variant);
+		variantScores.scores[pos - 1].name = name;
 		save();
 	}
 
-	public static String getName(int pos){
-		return scores[pos - 1].name;
+	public static String getName(Variant variant, int pos){
+		VariantScores variantScores = getVariantScores(variant);
+		return variantScores.scores[pos - 1].name;
 	}
 }
